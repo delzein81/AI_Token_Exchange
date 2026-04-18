@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AIX Exchange — Trade AI credits across every model</title>
+<meta name="description" content="The first marketplace where you can buy, sell, and swap AI usage credits across GPT, Claude, Gemini, and Grok.">
+<meta property="og:title" content="AIX Exchange — Trade AI credits across every model">
+<meta property="og:description" content="Buy, sell, and swap AI usage credits across GPT, Claude, Gemini, and Grok. Alpha prototype.">
+
+<!-- GoatCounter analytics -->
+<script data-goatcounter="https://aixexchange.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+
+<style>
+  :root {
+    --bg: #fafaf7;
+    --surface: #ffffff;
+    --surface-2: #f4f2ec;
+    --text: #1a1a18;
+    --text-muted: #6b6a66;
+    --text-faint: #96958f;
+    --border: rgba(0,0,0,0.08);
+    --border-strong: rgba(0,0,0,0.16);
+    --accent: #d85a30;
+    --radius: 8px;
+    --radius-lg: 12px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  .hero { padding: 60px 24px 40px; text-align: center; max-width: 720px; margin: 0 auto; }
+  .hero-badge {
+    display: inline-block; font-size: 12px; font-weight: 500;
+    padding: 4px 12px; border-radius: 999px;
+    background: #fbe8e0; color: #712b13; margin-bottom: 20px;
+  }
+  .hero h1 { font-size: 36px; font-weight: 500; line-height: 1.2; margin: 0 0 16px; letter-spacing: -0.02em; }
+  .hero p { font-size: 17px; color: var(--text-muted); margin: 0 0 24px; }
+  .container { max-width: 900px; margin: 0 auto; padding: 0 24px 60px; }
+  .app { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 24px; }
+  .app-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+  .app-title { font-size: 18px; font-weight: 500; margin: 0; }
+  .app-subtitle { font-size: 13px; color: var(--text-muted); margin: 2px 0 0; }
+  .balance-box { text-align: right; }
+  .balance-label { font-size: 13px; color: var(--text-muted); margin: 0; }
+  .balance-value { font-size: 18px; font-weight: 500; margin: 2px 0 0; }
+  .tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 0.5px solid var(--border); padding-bottom: 8px; overflow-x: auto; }
+  .tab {
+    padding: 8px 14px; font-size: 14px; border-radius: var(--radius);
+    cursor: pointer; background: transparent; border: 0.5px solid transparent;
+    color: var(--text-muted); white-space: nowrap; font-family: inherit;
+  }
+  .tab.active { background: var(--surface-2); border-color: var(--border); color: var(--text); font-weight: 500; }
+  .metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 24px; }
+  .metric { background: var(--surface-2); border-radius: var(--radius); padding: 14px; }
+  .metric-label { font-size: 13px; color: var(--text-muted); margin: 0 0 4px; }
+  .metric-value { font-size: 22px; font-weight: 500; margin: 0; }
+  .section-title { font-size: 15px; font-weight: 500; margin: 0 0 12px; }
+  .model-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 24px; }
+  .model-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 12px; }
+  .model-row { display: flex; justify-content: space-between; align-items: center; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 500; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .p-gpt { background: #eeedfe; color: #26215c; }
+  .p-claude { background: #faece7; color: #4a1b0c; }
+  .p-gemini { background: #e1f5ee; color: #04342c; }
+  .p-grok { background: #f1efe8; color: #2c2c2a; }
+  .muted { color: var(--text-muted); font-size: 13px; }
+  .explainer { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 16px 20px; }
+  .panel-hidden { display: none; }
+  input[type="text"], input[type="email"], input[type="number"], textarea, select {
+    width: 100%; padding: 8px 12px;
+    border: 0.5px solid var(--border-strong); border-radius: var(--radius);
+    font-size: 14px; font-family: inherit; background: var(--surface); color: var(--text);
+  }
+  textarea { resize: vertical; min-height: 80px; }
+  button {
+    padding: 8px 14px; border: 0.5px solid var(--border-strong); border-radius: var(--radius);
+    background: var(--surface); color: var(--text); font-size: 14px; font-family: inherit;
+    cursor: pointer; font-weight: 500;
+  }
+  button:hover { background: var(--surface-2); }
+  button.primary { background: var(--text); color: var(--surface); border-color: var(--text); }
+  button.primary:hover { opacity: 0.9; background: var(--text); }
+  .listing {
+    display: grid; grid-template-columns: 1fr 1fr 1fr 1fr auto; gap: 12px;
+    align-items: center; padding: 14px; border-radius: var(--radius);
+    border: 0.5px solid var(--border); margin-bottom: 10px; font-size: 14px; background: var(--surface);
+  }
+  .listing-label { font-size: 12px; color: var(--text-muted); margin: 0 0 2px; }
+  .listing-val { font-weight: 500; margin: 0; }
+  .chat-output { background: var(--surface-2); border-radius: var(--radius); padding: 14px; min-height: 120px; font-size: 14px; color: var(--text-muted); margin-top: 12px; }
+  .card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 18px 20px; }
+  .field { margin-bottom: 12px; }
+  .field-label { font-size: 13px; color: var(--text-muted); margin: 0 0 6px; display: block; }
+  .row { display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+  .footer { text-align: center; padding: 24px; font-size: 13px; color: var(--text-faint); }
+  .footer a { color: var(--text-muted); }
+
+  .feedback { background: #fff8f2; border: 0.5px solid #f0c4a8; border-radius: var(--radius-lg); padding: 24px; margin-top: 32px; }
+  .feedback h3 { font-size: 18px; font-weight: 500; margin: 0 0 8px; }
+  .feedback-intro { font-size: 14px; color: var(--text-muted); margin: 0 0 20px; }
+  .feedback-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
+  .radio-option {
+    display: flex; align-items: center; justify-content: center;
+    padding: 10px; border: 0.5px solid var(--border-strong); border-radius: var(--radius);
+    cursor: pointer; font-size: 14px; background: var(--surface); transition: all 0.15s;
+  }
+  .radio-option input { display: none; }
+  .radio-option.selected { background: var(--accent); color: white; border-color: var(--accent); }
+  .backup-link { text-align: center; margin-top: 16px; padding-top: 16px; border-top: 0.5px solid #f0c4a8; font-size: 13px; color: var(--text-muted); }
+  .backup-link a { color: var(--accent); font-weight: 500; }
+  .feedback-success { background: #e1f5ee; border: 0.5px solid #9fe1cb; color: #04342c; padding: 16px; border-radius: var(--radius); text-align: center; font-weight: 500; }
+  @media (max-width: 600px) {
+    .hero { padding: 40px 20px 30px; }
+    .hero h1 { font-size: 28px; }
+    .listing { grid-template-columns: 1fr 1fr; }
+    .listing button { grid-column: span 2; }
+  }
+</style>
+</head>
+<body>
+
+<section class="hero">
+  <div class="hero-badge">Alpha · simulated data</div>
+  <h1>Trade AI credits across every model</h1>
+  <p>Buy, sell, and swap usage credits for GPT, Claude, Gemini, and Grok — on one exchange. Click around the prototype below and tell us what you think.</p>
+</section>
+
+<div class="container">
+  <div class="app">
+
+    <div class="app-header">
+      <div>
+        <p class="app-title">AIX Exchange</p>
+        <p class="app-subtitle">Alpha prototype · simulated data</p>
+      </div>
+      <div class="balance-box">
+        <p class="balance-label">Wallet balance</p>
+        <p class="balance-value" id="walletBalance">500 AIX</p>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="dashboard">Dashboard</button>
+      <button class="tab" data-tab="chat">Use AI</button>
+      <button class="tab" data-tab="marketplace">Marketplace</button>
+      <button class="tab" data-tab="sell">Sell credits</button>
+      <button class="tab" data-tab="wallet">Wallet</button>
+    </div>
+
+    <div id="panel-dashboard">
+      <div class="metric-grid">
+        <div class="metric"><p class="metric-label">Balance</p><p class="metric-value" id="m1">500 AIX</p></div>
+        <div class="metric"><p class="metric-label">Saved vs retail</p><p class="metric-value">£42</p></div>
+        <div class="metric"><p class="metric-label">Active bids</p><p class="metric-value">3</p></div>
+        <div class="metric"><p class="metric-label">Credits sold</p><p class="metric-value">120</p></div>
+      </div>
+
+      <p class="section-title">Model availability</p>
+      <div class="model-grid">
+        <div class="model-card">
+          <div class="model-row">
+            <span class="pill p-gpt"><span class="dot" style="background:#534ab7"></span>GPT-4</span>
+            <span style="font-size:13px;font-weight:500;">1.2 AIX</span>
+          </div>
+          <p class="muted" style="margin:8px 0 0;">per 1k tokens</p>
+        </div>
+        <div class="model-card">
+          <div class="model-row">
+            <span class="pill p-claude"><span class="dot" style="background:#d85a30"></span>Claude</span>
+            <span style="font-size:13px;font-weight:500;">1.0 AIX</span>
+          </div>
+          <p class="muted" style="margin:8px 0 0;">per 1k tokens</p>
+        </div>
+        <div class="model-card">
+          <div class="model-row">
+            <span class="pill p-gemini"><span class="dot" style="background:#1d9e75"></span>Gemini</span>
+            <span style="font-size:13px;font-weight:500;">0.8 AIX</span>
+          </div>
+          <p class="muted" style="margin:8px 0 0;">per 1k tokens</p>
+        </div>
+        <div class="model-card">
+          <div class="model-row">
+            <span class="pill p-grok"><span class="dot" style="background:#5f5e5a"></span>Grok</span>
+            <span style="font-size:13px;font-weight:500;">0.9 AIX</span>
+          </div>
+          <p class="muted" style="margin:8px 0 0;">per 1k tokens</p>
+        </div>
+      </div>
+
+      <div class="explainer">
+        <p class="section-title" style="margin-bottom:6px;">How it works</p>
+        <p class="muted" style="margin:0;">1 AIX = a standardised unit of AI usage. Buy AIX with £ or $. Spend across any model. Sell unused AIX on the marketplace via live auction. You never touch the provider's native tokens — you trade AIX.</p>
+      </div>
+    </div>
+
+    <div id="panel-chat" class="panel-hidden">
+      <div class="card" style="margin-bottom:12px;">
+        <div class="row" style="margin-bottom:12px;">
+          <div style="flex:1;min-width:200px;">
+            <p class="field-label">Model</p>
+            <select id="modelPick">
+              <option value="gpt">GPT-4 · 1.2 AIX / 1k tokens</option>
+              <option value="claude">Claude · 1.0 AIX / 1k tokens</option>
+              <option value="gemini">Gemini · 0.8 AIX / 1k tokens</option>
+              <option value="grok">Grok · 0.9 AIX / 1k tokens</option>
+            </select>
+          </div>
+          <div>
+            <p class="field-label">Est. cost</p>
+            <p style="font-weight:500;margin:0;font-size:15px;" id="estCost">~2 AIX</p>
+          </div>
+        </div>
+        <textarea id="promptInput" placeholder="Type a prompt to any model..." rows="3"></textarea>
+        <div class="row" style="margin-top:10px;">
+          <span class="muted" id="chatStatus">Simulated responses · real APIs wire in later</span>
+          <button class="primary" id="sendBtn">Send prompt</button>
+        </div>
+      </div>
+      <div class="chat-output" id="chatOutput">Response will appear here...</div>
+    </div>
+
+    <div id="panel-marketplace" class="panel-hidden">
+      <p class="section-title">Live auction</p>
+      <p class="muted" style="margin:0 0 16px;">Users selling unused credits. Place a bid — highest bid wins when the auction closes.</p>
+      <div id="listings"></div>
+    </div>
+
+    <div id="panel-sell" class="panel-hidden">
+      <div class="card">
+        <p class="section-title">List credits for auction</p>
+        <div class="field">
+          <p class="field-label">Amount (AIX)</p>
+          <input type="number" id="sellAmt" placeholder="e.g. 100">
+        </div>
+        <div class="field">
+          <p class="field-label">Starting bid (£)</p>
+          <input type="number" id="sellPrice" placeholder="e.g. 7.50" step="0.01">
+        </div>
+        <div class="field">
+          <p class="field-label">Auction duration</p>
+          <select id="sellDur">
+            <option>6 hours</option>
+            <option>12 hours</option>
+            <option>24 hours</option>
+            <option>3 days</option>
+          </select>
+        </div>
+        <button class="primary" id="listBtn">List for auction</button>
+        <p class="muted" style="margin:12px 0 0;">Platform fee: 5% on successful sale</p>
+      </div>
+    </div>
+
+    <div id="panel-wallet" class="panel-hidden">
+      <div class="card" style="margin-bottom:12px;">
+        <p class="section-title">Top up wallet</p>
+        <p class="muted" style="margin:0 0 12px;">£1 = 10 AIX at retail. Marketplace usually cheaper.</p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;">
+          <button data-topup="100">£10 → 100 AIX</button>
+          <button data-topup="500">£50 → 500 AIX</button>
+          <button data-topup="1000">£100 → 1000 AIX</button>
+        </div>
+      </div>
+      <div class="card">
+        <p class="section-title">Recent activity</p>
+        <div style="font-size:13px;color:var(--text-muted);">
+          <div style="padding:8px 0;border-bottom:0.5px solid var(--border);">Spent 4 AIX on Claude prompt · 2h ago</div>
+          <div style="padding:8px 0;border-bottom:0.5px solid var(--border);">Won auction: 50 AIX for £3.80 · yesterday</div>
+          <div style="padding:8px 0;">Topped up 500 AIX for £50 · 3 days ago</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="feedback">
+    <h3>Tell us what you think</h3>
+    <p class="feedback-intro">30 seconds. Every response shapes the real build. Early respondents get first access.</p>
+
+    <form id="feedbackForm">
+      <input type="hidden" name="access_key" value="06391d50-8a82-4138-a22a-34f58b8a4347">
+      <input type="hidden" name="subject" value="AIX Exchange feedback">
+      <input type="hidden" name="from_name" value="AIX Exchange alpha">
+      <input type="checkbox" name="botcheck" style="display:none;">
+
+      <div class="field">
+        <label class="field-label">Would you use this?</label>
+        <div class="feedback-options">
+          <label class="radio-option"><input type="radio" name="would_use" value="Yes" required>Yes</label>
+          <label class="radio-option"><input type="radio" name="would_use" value="Maybe">Maybe</label>
+          <label class="radio-option"><input type="radio" name="would_use" value="No">No</label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="concerns">What would stop you from using it? (optional)</label>
+        <textarea id="concerns" name="concerns" rows="3" placeholder="Trust? Price? Something else?"></textarea>
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="useremail">Email for early access (optional)</label>
+        <input type="email" id="useremail" name="email" placeholder="you@example.com">
+      </div>
+
+      <button type="submit" class="primary" style="width:100%;padding:12px;">Submit feedback</button>
+    </form>
+
+    <div id="feedbackSuccess" class="feedback-success" style="display:none;">
+      Thanks — your feedback is in. We'll be in touch when the real build is ready.
+    </div>
+
+    <div class="backup-link">
+      Form not working? <a href="https://forms.gle/pzWr3fBsB8UQ7ZfZ8" target="_blank" rel="noopener">Use the Google Form backup →</a>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  AIX Exchange · alpha prototype · <a href="mailto:elzeindany@gmail.com">contact</a>
+</div>
+
+<script>
+(function(){
+  var balance = 500;
+  var walletEls = [document.getElementById('walletBalance'), document.getElementById('m1')];
+  function setBalance(v){
+    balance = Math.max(0, Math.round(v));
+    walletEls.forEach(function(e){ if(e) e.textContent = balance + ' AIX'; });
+  }
+
+  var tabs = document.querySelectorAll('.tab');
+  var panels = ['dashboard','chat','marketplace','sell','wallet'];
+  tabs.forEach(function(t){
+    t.addEventListener('click', function(){
+      tabs.forEach(function(x){ x.classList.remove('active'); });
+      t.classList.add('active');
+      panels.forEach(function(p){
+        document.getElementById('panel-'+p).classList.toggle('panel-hidden', p !== t.dataset.tab);
+      });
+    });
+  });
+
+  var modelPick = document.getElementById('modelPick');
+  var promptIn = document.getElementById('promptInput');
+  var estCost = document.getElementById('estCost');
+  var out = document.getElementById('chatOutput');
+  var rates = { gpt: 1.2, claude: 1.0, gemini: 0.8, grok: 0.9 };
+  var names = { gpt: 'GPT-4', claude: 'Claude', gemini: 'Gemini', grok: 'Grok' };
+
+  function updateEst(){
+    var words = (promptIn.value.trim().split(/\s+/).filter(Boolean).length) || 0;
+    var kTokens = Math.max(0.5, words / 400);
+    var cost = Math.round(kTokens * rates[modelPick.value] * 10) / 10;
+    estCost.textContent = '~' + cost + ' AIX';
+  }
+  modelPick.addEventListener('change', updateEst);
+  promptIn.addEventListener('input', updateEst);
+
+  document.getElementById('sendBtn').addEventListener('click', function(){
+    if (!promptIn.value.trim()) { out.textContent = 'Enter a prompt first.'; return; }
+    var words = promptIn.value.trim().split(/\s+/).filter(Boolean).length;
+    var kTokens = Math.max(0.5, words / 400);
+    var cost = Math.round(kTokens * rates[modelPick.value] * 10) / 10;
+    if (cost > balance) { out.textContent = 'Not enough AIX. Top up or buy credits on marketplace.'; return; }
+    setBalance(balance - cost);
+    out.innerHTML = '<p style="margin:0 0 8px;color:var(--text);font-weight:500;">' + names[modelPick.value] + ' · ' + cost + ' AIX spent</p><p style="margin:0;">[Simulated response] This is where the real API response from ' + names[modelPick.value] + ' would appear. In the live build, your backend routes the prompt to the provider and deducts the exact token cost.</p>';
+  });
+
+  var listings = [
+    { seller: 'indie_dev_42', amt: 200, topBid: 14.20, bids: 7, ends: '3h 12m' },
+    { seller: 'automation_jo', amt: 50, topBid: 3.80, bids: 3, ends: '1h 45m' },
+    { seller: 'startup_nova', amt: 1000, topBid: 68.00, bids: 12, ends: '22h' },
+    { seller: 'copywriter_ml', amt: 150, topBid: 10.50, bids: 4, ends: '6h' }
+  ];
+  var listingsEl = document.getElementById('listings');
+  function renderListings(){
+    listingsEl.innerHTML = listings.map(function(l, i){
+      return '<div class="listing">' +
+        '<div><p class="listing-label">Seller</p><p class="listing-val">' + l.seller + '</p></div>' +
+        '<div><p class="listing-label">Amount</p><p class="listing-val">' + l.amt + ' AIX</p></div>' +
+        '<div><p class="listing-label">Top bid</p><p class="listing-val">£' + l.topBid.toFixed(2) + '</p></div>' +
+        '<div><p class="listing-label">Ends in</p><p class="listing-val">' + l.ends + '</p></div>' +
+        '<button data-bid="' + i + '">Bid</button>' +
+        '</div>';
+    }).join('');
+    listingsEl.querySelectorAll('button[data-bid]').forEach(function(b){
+      b.addEventListener('click', function(){
+        var i = parseInt(b.dataset.bid, 10);
+        var next = Math.round((listings[i].topBid + 0.5) * 100) / 100;
+        listings[i].topBid = next;
+        listings[i].bids += 1;
+        renderListings();
+      });
+    });
+  }
+  renderListings();
+
+  document.getElementById('listBtn').addEventListener('click', function(){
+    var amt = parseInt(document.getElementById('sellAmt').value, 10);
+    var price = parseFloat(document.getElementById('sellPrice').value);
+    if (!amt || !price) { alert('Enter amount and starting bid'); return; }
+    if (amt > balance) { alert('Not enough AIX to list'); return; }
+    listings.unshift({ seller: 'you', amt: amt, topBid: price, bids: 0, ends: '24h' });
+    setBalance(balance - amt);
+    renderListings();
+    document.querySelector('[data-tab="marketplace"]').click();
+  });
+
+  document.querySelectorAll('[data-topup]').forEach(function(b){
+    b.addEventListener('click', function(){
+      setBalance(balance + parseInt(b.dataset.topup, 10));
+    });
+  });
+
+  updateEst();
+
+  // Feedback form radio visual
+  document.querySelectorAll('.radio-option').forEach(function(opt){
+    opt.addEventListener('click', function(){
+      document.querySelectorAll('.radio-option').forEach(function(o){ o.classList.remove('selected'); });
+      opt.classList.add('selected');
+    });
+  });
+
+  // Feedback form submit via Web3Forms
+  var feedbackForm = document.getElementById('feedbackForm');
+  var feedbackSuccess = document.getElementById('feedbackSuccess');
+  feedbackForm.addEventListener('submit', function(e){
+    e.preventDefault();
+    var formData = new FormData(feedbackForm);
+    var submitBtn = feedbackForm.querySelector('button[type="submit"]');
+    submitBtn.textContent = 'Sending...';
+    submitBtn.disabled = true;
+
+    fetch('https://api.web3forms.com/submit', {
+      method: 'POST',
+      body: formData
+    }).then(function(res){ return res.json(); })
+      .then(function(data){
+        if (data.success) {
+          feedbackForm.style.display = 'none';
+          feedbackSuccess.style.display = 'block';
+        } else {
+          alert('Submission failed. Please try the Google Form backup link below.');
+          submitBtn.textContent = 'Submit feedback';
+          submitBtn.disabled = false;
+        }
+      }).catch(function(){
+        alert('Submission failed. Please try the Google Form backup link below.');
+        submitBtn.textContent = 'Submit feedback';
+        submitBtn.disabled = false;
+      });
+  });
+})();
+</script>
+
+</body>
+</html>
